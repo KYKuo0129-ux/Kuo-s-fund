@@ -44,15 +44,19 @@ const PROSP_DATA=[
   {t:'大戶福利',b:'投資超過 1 萬元者為大戶，享有：\n• 優先償還權\n• 個人化財務分析 & 建議\n• 限定款 NFT\n• VIP 招待餐會活動\n\n餐會規格視獲利而定，從便當＋麥香奶茶到遊艇派對＋香檳，甚至國外旅行！'},
 ];
 const PIE_C=['#c9956c','#7ab8d4','#d4a05f','#5dba7d','#d45555','#a17dc9','#d4c75d'];
+const COIN_COLORS={BTC:'#f5a623',ETH:'#8b6cf6',ADA:'#2dd4a0',SOL:'#2563eb',SUI:'#67d8f9',LINK:'#22b07d','其他':'#ef5555'};
 
 let prices=null,fundValue=0,fundGain=null,reports=[];
 const $=id=>document.getElementById(id);
 const fmt=(n,d=2)=>n==null?'—':Number(n).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
 const fmtPct=n=>n==null?'—':(n>=0?'+':'')+((n*100).toFixed(2))+'%';
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
-function linkify(t){
+function linkify(t,isThoughts){
   let h=esc(t);
-  // Convert markdown links [text](url) — need to handle escaped brackets
+  // Remove 基金儀表板 lines (performance section cleanup)
+  h=h.replace(/.*基金儀表板.*(?:\n|$)/g,'');
+  h=h.replace(/.*Google Sheet.*即時資料.*(?:\n|$)/g,'');
+  // Convert markdown links [text](url)
   h=h.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
   // Convert bare URLs not already in <a> tags
   h=h.replace(/(?<!href="|">)(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
@@ -60,6 +64,10 @@ function linkify(t){
   h=h.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
   // Convert > blockquotes
   h=h.replace(/^&gt;\s?(.*)$/gm,'<blockquote style="border-left:2px solid var(--gold-d);padding-left:12px;margin:8px 0;color:var(--t2);font-style:italic">$1</blockquote>');
+  // Style thoughts titles: lines starting with 關於、論、淺談 etc
+  if(isThoughts){
+    h=h.replace(/^(關於.+|論.+|淺談.+|記.+|致.+)$/gm,'<div class="thoughts-title">$1</div>');
+  }
   return h;
 }
 function getCountdown(){const d=FUND_END-new Date();return d<=0?'已到期':Math.floor(d/864e5);}
@@ -83,15 +91,16 @@ function renderPortfolio(){
   const data=PORTFOLIO.map(c=>{const p=prices?.[c.gid]?.usd??null;const v=p!=null?p*c.amt:null;return{...c,price:p,val:v};}).sort((a,b)=>(b.val??0)-(a.val??0));
   fundValue=data.reduce((s,c)=>s+(c.val??0),0);fundGain=fundValue>0?(fundValue-COST)/COST:null;
   let html='';
-  data.forEach(c=>{const pStr=c.price!=null?(c.price<1?'$'+c.price.toFixed(4):'$'+fmt(c.price)):'—';const vStr=c.val!=null?'$'+fmt(c.val,0):'—';
+  data.forEach(c=>{const isInt=c.sym==='BTC'||c.sym==='ETH';const pStr=c.price!=null?(c.price<1?'$'+c.price.toFixed(4):isInt?'$'+Math.round(c.price).toLocaleString():'$'+fmt(c.price)):'—';const vStr=c.val!=null?'$'+fmt(c.val,0):'—';
     html+='<tr><td><span class="sym">'+c.sym+'</span><br><span class="sub">'+c.name+'</span></td><td class="mono" style="font-size:12px">'+pStr+'</td><td class="mono">'+vStr+'</td><td class="mono" style="color:var(--t2)">$'+c.cost+'</td></tr>';});
   $('portBody').innerHTML=html;
   const wv=data.filter(c=>c.val!=null&&c.val>0);const top6=wv.slice(0,6);const ov=wv.slice(6).reduce((s,c)=>s+c.val,0);
   const pd=[...top6.map(c=>({name:c.sym,value:c.val}))];if(ov>0)pd.push({name:'其他',value:ov});
   if(pd.length>0){const ctx=$('pieChart').getContext('2d');if(window._pie)window._pie.destroy();
-    window._pie=new Chart(ctx,{type:'doughnut',data:{labels:pd.map(c=>c.name),datasets:[{data:pd.map(c=>c.value),backgroundColor:PIE_C.slice(0,pd.length),borderWidth:0,hoverOffset:6}]},
+    const pieColors=pd.map(c=>COIN_COLORS[c.name]||'#888');
+    window._pie=new Chart(ctx,{type:'doughnut',data:{labels:pd.map(c=>c.name),datasets:[{data:pd.map(c=>c.value),backgroundColor:pieColors,borderWidth:0,hoverOffset:6}]},
       options:{responsive:true,maintainAspectRatio:true,cutout:'55%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a1a22',titleColor:'#ede6db',bodyColor:'#ede6db',borderColor:'#252530',borderWidth:1,callbacks:{label:c=>c.label+': $'+fmt(c.raw,0)}}}}});
-    let lg='';pd.forEach((c,i)=>{lg+='<span><span class="pie-dot" style="background:'+PIE_C[i]+'"></span>'+c.name+'</span>';});$('pieLegend').innerHTML=lg;}
+    let lg='';pd.forEach((c,i)=>{lg+='<span><span class="pie-dot" style="background:'+pieColors[i]+'"></span>'+c.name+'</span>';});$('pieLegend').innerHTML=lg;}
 }
 function renderCharts(){
   const labels=MONTHLY.map(m=>{const p=m.m.split('/');return p[0].slice(2)+"'"+parseInt(p[1])+'月';});
@@ -100,7 +109,11 @@ function renderCharts(){
   const pr=fv.map((_,i)=>(i===mxi||i===mni)?7:3);const pc=fv.map((_,i)=>i===mxi?'#4ecb71':i===mni?'#e8555a':'#c9956c');
   const ann={};
   ann.hi={type:'label',xValue:labels[mxi],yValue:mx,content:['$'+mx.toLocaleString()],backgroundColor:'rgba(78,203,113,.15)',color:'#4ecb71',font:{size:11,family:'JetBrains Mono',weight:'600'},padding:{top:3,bottom:3,left:6,right:6},borderRadius:6,xAdjust:50,yAdjust:0};
+  ann.hiLine={type:'line',xMin:labels[mxi],xMax:labels[mxi],yMin:mx,yMax:mx,borderColor:'rgba(78,203,113,.3)',borderWidth:1,xAdjust:0,
+    label:{display:false},arrowHeads:{end:{display:false}}};
   ann.lo={type:'label',xValue:labels[mni],yValue:mn,content:['$'+mn.toLocaleString()],backgroundColor:'rgba(232,85,90,.15)',color:'#e8555a',font:{size:11,family:'JetBrains Mono',weight:'600'},padding:{top:3,bottom:3,left:6,right:6},borderRadius:6,xAdjust:-50,yAdjust:-20};
+  ann.loLine={type:'line',xMin:labels[mni],xMax:labels[mni],yMin:mn,yMax:mn,borderColor:'rgba(232,85,90,.3)',borderWidth:1,
+    label:{display:false}};
   ann.cost={type:'line',yMin:COST,yMax:COST,borderColor:'rgba(138,130,144,.3)',borderDash:[6,4],borderWidth:1,label:{display:true,content:'成本 $'+COST.toLocaleString(),position:'start',backgroundColor:'rgba(26,26,34,.8)',color:'#8a8290',font:{size:10,family:'JetBrains Mono'},padding:{top:2,bottom:2,left:6,right:6}}};
   new Chart($('lineChart').getContext('2d'),{type:'line',data:{labels,datasets:[{label:'基金現值',data:fv,borderColor:'#c9956c',backgroundColor:'rgba(201,149,108,.08)',fill:true,tension:.3,pointRadius:pr,pointHoverRadius:8,pointBackgroundColor:pc,borderWidth:2}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
@@ -157,9 +170,9 @@ function renderReportList(){$('reportList').classList.remove('hidden');$('report
 }
 function toggleYear(y){const g=$('yearGroup'+y),a=$('yearArr'+y);if(!g)return;const open=g.style.display!=='none';g.style.display=open?'none':'grid';a.textContent=open?'▸':'▾';}
 function showReport(i){const r=reports[i];if(!r)return;$('reportList').classList.add('hidden');const d=$('reportDetail');d.classList.remove('hidden');
-  d.innerHTML='<div class="rpt-back" onclick="renderReportList()">← 返回所有月報</div><h2 style="font-family:var(--serif);font-size:clamp(24px,5vw,32px);margin-bottom:6px">'+esc(r.title)+'</h2><div style="font-family:var(--mono);font-size:11px;color:var(--t2);margin-bottom:24px">'+esc(r.date)+'</div><div class="rpt-tabs"><div class="rpt-tab on" onclick="switchTab(this,\'performance\','+i+')">基金表現</div><div class="rpt-tab" onclick="switchTab(this,\'strategy\','+i+')">未來策略</div><div class="rpt-tab" onclick="switchTab(this,\'thoughts\','+i+')">心得小記</div><div class="rpt-tab" onclick="switchTab(this,\'resources\','+i+')">推薦文章</div></div><div class="rpt-body" id="rptContent">'+linkify(r.performance||'尚無內容')+'</div>';
+  d.innerHTML='<div class="rpt-back" onclick="renderReportList()">← 返回所有月報</div><h2 style="font-family:var(--serif);font-size:clamp(24px,5vw,32px);margin-bottom:6px">'+esc(r.title)+'</h2><div style="font-family:var(--mono);font-size:11px;color:var(--t2);margin-bottom:24px">'+esc(r.date)+'</div><div class="rpt-tabs"><div class="rpt-tab on" onclick="switchTab(this,\'performance\','+i+')">基金表現</div><div class="rpt-tab" onclick="switchTab(this,\'strategy\','+i+')">未來策略</div><div class="rpt-tab" onclick="switchTab(this,\'thoughts\','+i+')">心得小記</div><div class="rpt-tab" onclick="switchTab(this,\'resources\','+i+')">近期推薦</div></div><div class="rpt-body" id="rptContent">'+linkify(r.performance||'尚無內容',false)+'</div>';
   window.scrollTo({top:$('reports').offsetTop-60,behavior:'smooth'});}
-function switchTab(el,key,i){el.parentElement.querySelectorAll('.rpt-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');$('rptContent').innerHTML=linkify(reports[i][key]||'尚無內容');}
+function switchTab(el,key,i){el.parentElement.querySelectorAll('.rpt-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');$('rptContent').innerHTML=linkify(reports[i][key]||'尚無內容',key==='thoughts');}
 function renderProsp(){let h='';PROSP_DATA.forEach((p,i)=>{h+='<div class="prosp-item"><div class="prosp-hd" onclick="toggleProsp('+i+')"><span>'+p.t+'</span><span class="prosp-arr" id="prospArr'+i+'">▾</span></div><div class="prosp-bd hidden" id="prospBd'+i+'">'+p.b+'</div></div>';});$('prospList').innerHTML=h;}
 function toggleProsp(i){const bd=$('prospBd'+i),ar=$('prospArr'+i);const o=!bd.classList.contains('hidden');PROSP_DATA.forEach((_,j)=>{$('prospBd'+j).classList.add('hidden');$('prospArr'+j).classList.remove('open');});if(!o){bd.classList.remove('hidden');ar.classList.add('open');}}
 function renderTrades(){let h='<table class="trades-table"><thead><tr><th>幣種</th><th>投入</th><th>收回</th><th>盈虧</th><th>時間</th></tr></thead><tbody>';let ti=0,tr=0;
@@ -179,4 +192,17 @@ function deleteReport(i){
   reports.splice(i,1);saveReports();renderReportList();renderAdminList();
 }
 setInterval(()=>{$('heroCountdown').textContent=getCountdown();},60000);
+
+// Name cycling animation
+const NAMES=['郭胖鵝','郭巧草','郭冠妤','老郭','郭郭','郭小鵝'];
+const NEON_COLORS=['#ff6b9d','#c084fc','#60d5f7','#4ecb71','#fbbf24','#f97316','#e879f9','#22d3ee'];
+let nameIdx=0;
+function cycleName(){
+  nameIdx=(nameIdx+1)%NAMES.length;
+  const el=$('nameEl');if(!el)return;
+  el.style.color=NEON_COLORS[Math.floor(Math.random()*NEON_COLORS.length)];
+  el.textContent=NAMES[nameIdx];
+}
+setInterval(cycleName,1000);
+
 document.addEventListener('DOMContentLoaded',()=>{$('heroCountdown').textContent=getCountdown();fetchPrices();renderCharts();renderProsp();renderTrades();loadReports();});
