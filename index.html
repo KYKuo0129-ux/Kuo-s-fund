@@ -21,7 +21,7 @@
   --r:12px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;font-size:17px;-webkit-text-size-adjust:100%;overflow-x:hidden}
+html{scroll-behavior:smooth;font-size:17px;-webkit-text-size-adjust:100%}
 body{background:var(--bg);color:var(--txt);font-family:var(--sans);line-height:1.7;font-weight:400;overflow-x:hidden;max-width:100vw;-webkit-font-smoothing:antialiased}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -46,13 +46,14 @@ section{padding:56px 0}
 .hero::before{content:'';position:absolute;top:-20%;right:-30%;width:70vw;height:70vw;background:radial-gradient(circle,rgba(201,149,108,.05),transparent 65%);pointer-events:none}
 .hero-tag{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:3px;margin-bottom:16px}
 .hero-h{font-family:var(--serif);font-size:clamp(42px,10vw,72px);font-weight:300;line-height:1.05;margin-bottom:12px}
-.hero-sub{font-size:14px;color:var(--t2);max-width:400px;margin-bottom:36px;font-weight:300}
+.hero-sub{font-size:15px;color:var(--t2);max-width:400px;margin-bottom:36px;font-weight:300}
 .hero-sub .by{font-family:var(--mono);font-size:11px;color:var(--t3)}
-.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.metric{padding:16px 14px;border:1px solid var(--b1);border-radius:var(--r);background:var(--s1)}
-.metric-label{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--t2);margin-bottom:6px}
-.metric-val{font-family:var(--serif);font-size:clamp(20px,5vw,30px);font-weight:600}
-.metric-sub{font-size:10px;color:var(--t3);margin-top:2px}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric{padding:20px 16px;border:1px solid var(--b1);border-radius:var(--r);background:var(--s1)}
+.metric-label{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--t2);margin-bottom:6px}
+.metric-val{font-family:var(--serif);font-size:clamp(26px,6vw,36px);font-weight:600}
+.metric-sub{font-size:11px;color:var(--t3);margin-top:4px}
+.metric-wide{grid-column:1/-1}
 .countdown-val{animation:glow 3s ease-in-out infinite;color:var(--gold)}
 .card{background:var(--card);border:1px solid var(--b1);border-radius:var(--r);padding:20px;transition:.25s}
 .card:hover{border-color:var(--b2)}
@@ -143,7 +144,7 @@ img,canvas,table{max-width:100%}
   <div class="metrics fade-up d3">
     <div class="metric"><div class="metric-label">基金現值</div><div class="metric-val" id="heroValue"><span class="loading">⋯</span></div><div class="metric-sub">成本 $6,160 U</div></div>
     <div class="metric"><div class="metric-label">盈虧</div><div class="metric-val" id="heroPnl"><span class="loading">⋯</span></div><div class="metric-sub" id="heroPnlSub">—</div></div>
-    <div class="metric"><div class="metric-label">倒數結算</div><div class="metric-val countdown-val" id="heroCountdown">—</div><div class="metric-sub">天</div></div>
+    <div class="metric metric-wide" style="display:flex;align-items:center;justify-content:space-between"><div><div class="metric-label">倒數結算</div><div class="metric-sub">距離 2026/03/15 結算日</div></div><div class="metric-val countdown-val" id="heroCountdown" style="font-size:clamp(32px,8vw,48px)">—<span style="font-size:16px;color:var(--t2);font-family:var(--sans);margin-left:4px">天</span></div></div>
   </div>
 </div></section>
 
