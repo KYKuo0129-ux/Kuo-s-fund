@@ -100,7 +100,7 @@ function renderCharts(){
   const pr=fv.map((_,i)=>(i===mxi||i===mni)?7:3);const pc=fv.map((_,i)=>i===mxi?'#4ecb71':i===mni?'#e8555a':'#c9956c');
   const ann={};
   ann.hi={type:'label',xValue:labels[mxi],yValue:mx,content:['$'+mx.toLocaleString()],backgroundColor:'rgba(78,203,113,.15)',color:'#4ecb71',font:{size:11,family:'JetBrains Mono',weight:'600'},padding:{top:3,bottom:3,left:6,right:6},borderRadius:6,xAdjust:50,yAdjust:0};
-  ann.lo={type:'label',xValue:labels[mni],yValue:mn,content:['$'+mn.toLocaleString()],backgroundColor:'rgba(232,85,90,.15)',color:'#e8555a',font:{size:11,family:'JetBrains Mono',weight:'600'},padding:{top:3,bottom:3,left:6,right:6},borderRadius:6,xAdjust:-50,yAdjust:0};
+  ann.lo={type:'label',xValue:labels[mni],yValue:mn,content:['$'+mn.toLocaleString()],backgroundColor:'rgba(232,85,90,.15)',color:'#e8555a',font:{size:11,family:'JetBrains Mono',weight:'600'},padding:{top:3,bottom:3,left:6,right:6},borderRadius:6,xAdjust:-50,yAdjust:-20};
   ann.cost={type:'line',yMin:COST,yMax:COST,borderColor:'rgba(138,130,144,.3)',borderDash:[6,4],borderWidth:1,label:{display:true,content:'成本 $'+COST.toLocaleString(),position:'start',backgroundColor:'rgba(26,26,34,.8)',color:'#8a8290',font:{size:10,family:'JetBrains Mono'},padding:{top:2,bottom:2,left:6,right:6}}};
   new Chart($('lineChart').getContext('2d'),{type:'line',data:{labels,datasets:[{label:'基金現值',data:fv,borderColor:'#c9956c',backgroundColor:'rgba(201,149,108,.08)',fill:true,tension:.3,pointRadius:pr,pointHoverRadius:8,pointBackgroundColor:pc,borderWidth:2}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
