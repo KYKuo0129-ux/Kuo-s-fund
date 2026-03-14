@@ -100,7 +100,7 @@ function renderCharts(){
   const pr=fv.map((_,i)=>(i===mxi||i===mni)?7:3);const pc=fv.map((_,i)=>i===mxi?'#4ecb71':i===mni?'#e8555a':'#c9956c');
   const ann={};
   ann.hi={type:'label',xValue:labels[mxi],yValue:mx,content:['$'+mx.toLocaleString()],backgroundColor:'rgba(78,203,113,.15)',color:'#4ecb71',font:{size:11,family:'JetBrains Mono',weight:'600'},padding:{top:3,bottom:3,left:6,right:6},borderRadius:6,xAdjust:50,yAdjust:0};
-  ann.lo={type:'label',xValue:labels[mni],yValue:mn,content:['$'+mn.toLocaleString()],backgroundColor:'rgba(232,85,90,.15)',color:'#e8555a',font:{size:11,family:'JetBrains Mono',weight:'600'},padding:{top:3,bottom:3,left:6,right:6},borderRadius:6,xAdjust:50,yAdjust:0};
+  ann.lo={type:'label',xValue:labels[mni],yValue:mn,content:['$'+mn.toLocaleString()],backgroundColor:'rgba(232,85,90,.15)',color:'#e8555a',font:{size:11,family:'JetBrains Mono',weight:'600'},padding:{top:3,bottom:3,left:6,right:6},borderRadius:6,xAdjust:-50,yAdjust:0};
   ann.cost={type:'line',yMin:COST,yMax:COST,borderColor:'rgba(138,130,144,.3)',borderDash:[6,4],borderWidth:1,label:{display:true,content:'成本 $'+COST.toLocaleString(),position:'start',backgroundColor:'rgba(26,26,34,.8)',color:'#8a8290',font:{size:10,family:'JetBrains Mono'},padding:{top:2,bottom:2,left:6,right:6}}};
   new Chart($('lineChart').getContext('2d'),{type:'line',data:{labels,datasets:[{label:'基金現值',data:fv,borderColor:'#c9956c',backgroundColor:'rgba(201,149,108,.08)',fill:true,tension:.3,pointRadius:pr,pointHoverRadius:8,pointBackgroundColor:pc,borderWidth:2}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
@@ -137,7 +137,7 @@ function renderReportList(){$('reportList').classList.remove('hidden');$('report
   let h='';const years=Object.keys(groups).sort((a,b)=>b-a);
   years.forEach((y,yi)=>{
     h+='<div style="margin-bottom:24px">';
-    h+='<div style="font-family:var(--mono);font-size:13px;color:var(--gold);letter-spacing:2px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;gap:8px" onclick="toggleYear(\''+y+'\')"><span style="font-size:16px;transition:.3s;display:inline-block" id="yearArr'+y+'">'+(yi===0?'▾':'▸')+'</span>'+y+'</div>';
+    h+='<div style="font-family:var(--mono);font-size:18px;color:var(--gold);letter-spacing:2px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 0;-webkit-tap-highlight-color:transparent" onclick="toggleYear(\''+y+'\')"><span style="font-size:22px;transition:.3s;display:inline-block" id="yearArr'+y+'">'+(yi===0?'▾':'▸')+'</span>'+y+'</div>';
     h+='<div id="yearGroup'+y+'" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;'+(yi===0?'':'display:none')+'">';
     groups[y].forEach(({r,i})=>{
       // Extract subtitle from thoughts (first line that's not a header marker)
