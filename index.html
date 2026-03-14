@@ -125,6 +125,35 @@ td{padding:10px 8px;border-bottom:1px solid rgba(37,37,48,.5);font-size:14px;wor
 .grid-2{display:grid;gap:16px}
 @media(min-width:640px){.grid-2{grid-template-columns:1fr 1fr}}
 img,canvas,table{max-width:100%}
+
+/* CHAT FLOAT */
+.chat-fab{position:fixed;bottom:24px;right:24px;z-index:150;width:56px;height:56px;border-radius:50%;
+  background:var(--gold);color:var(--bg);border:none;font-size:28px;cursor:pointer;
+  box-shadow:0 4px 20px rgba(201,149,108,.4);transition:.3s;display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent}
+.chat-fab:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(201,149,108,.5)}
+.chat-fab:active{transform:scale(.95)}
+.chat-win{position:fixed;bottom:90px;right:16px;z-index:150;width:340px;max-width:calc(100vw - 32px);
+  height:480px;max-height:calc(100vh - 120px);background:var(--card);border:1px solid var(--b1);
+  border-radius:16px;display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 12px 40px rgba(0,0,0,.5);animation:fadeUp .25s ease}
+.chat-head{padding:14px 16px;border-bottom:1px solid var(--b1);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.chat-head-title{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--gold-l)}
+.chat-close{background:none;border:none;color:var(--t2);font-size:20px;cursor:pointer;padding:4px}
+.chat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.chat-msg{max-width:88%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.7;word-break:break-word}
+.chat-msg.bot{background:var(--s1);color:var(--txt);align-self:flex-start;border-bottom-left-radius:4px}
+.chat-msg.user{background:var(--gold);color:var(--bg);align-self:flex-end;border-bottom-right-radius:4px;font-weight:500}
+.chat-msg.bot a{color:var(--gold-l)}
+.chat-input-row{padding:12px;border-top:1px solid var(--b1);display:flex;gap:8px;flex-shrink:0}
+.chat-input{flex:1;background:var(--s1);border:1px solid var(--b1);border-radius:10px;padding:10px 14px;
+  font-size:14px;font-family:var(--sans);color:var(--txt);outline:none;resize:none}
+.chat-input:focus{border-color:var(--gold)}
+.chat-input::placeholder{color:var(--t3)}
+.chat-send{background:var(--gold);color:var(--bg);border:none;border-radius:10px;padding:10px 16px;
+  font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);flex-shrink:0}
+.chat-send:disabled{opacity:.4;cursor:default}
+.chat-typing{font-size:12px;color:var(--t3);padding:4px 0;font-style:italic}
 </style>
 
 </head>
@@ -233,6 +262,22 @@ img,canvas,table{max-width:100%}
     <div id="adminReportList"></div>
   </div>
 </div>
+</div>
+
+<!-- CHAT -->
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" title="問胖鵝">🐧</button>
+<div class="chat-win hidden" id="chatWin">
+  <div class="chat-head">
+    <span class="chat-head-title">🐧 問胖鵝</span>
+    <button class="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-msgs" id="chatMsgs">
+    <div class="chat-msg bot">嗨！我是胖鵝 AI 助手 🐧<br><br>你可以問我任何關於月報的問題，例如：<br>• 「哪一個月講到記憶？」<br>• 「關於降息的分析」<br>• 「推薦過哪些書？」</div>
+  </div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chatInput" placeholder="輸入你的問題..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}">
+    <button class="chat-send" id="chatSend" onclick="sendChat()">送出</button>
+  </div>
 </div>
 
 <script src="reports.js"></script>
