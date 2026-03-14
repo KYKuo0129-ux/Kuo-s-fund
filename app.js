@@ -203,6 +203,6 @@ function cycleName(){
   el.style.color=NEON_COLORS[Math.floor(Math.random()*NEON_COLORS.length)];
   el.textContent=NAMES[nameIdx];
 }
-setInterval(cycleName,1000);
+setInterval(cycleName,830);
 
 document.addEventListener('DOMContentLoaded',()=>{$('heroCountdown').textContent=getCountdown();fetchPrices();renderCharts();renderProsp();renderTrades();loadReports();});
