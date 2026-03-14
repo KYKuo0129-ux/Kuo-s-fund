@@ -209,7 +209,7 @@ setInterval(cycleName,1000);
 //  CHAT with Gemini
 // ═══════════════════════════════════════════════════
 const GEMINI_KEY='AIzaSyC3VFUFkQCrHH10h1wJgXFfKfH2ZFFQZaM';
-const GEMINI_URL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+GEMINI_KEY;
+const GEMINI_URL='https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key='+GEMINI_KEY;
 
 function toggleChat(){
   $('chatWin').classList.toggle('hidden');
