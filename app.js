@@ -209,7 +209,7 @@ setInterval(cycleName,1000);
 //  CHAT with Gemini
 // ═══════════════════════════════════════════════════
 const GEMINI_KEY='AIzaSyC3VFUFkQCrHH10h1wJgXFfKfH2ZFFQZaM';
-const GEMINI_URL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+GEMINI_KEY;
+const GEMINI_URL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key='+GEMINI_KEY;
 
 function toggleChat(){
   $('chatWin').classList.toggle('hidden');
@@ -217,9 +217,11 @@ function toggleChat(){
 }
 
 function buildReportContext(){
+  // Keep it concise: title + thoughts subtitle + first 300 chars of each section
   return REPORTS_DATA.map(r=>{
-    return `【${r.title}（${r.date}）】\n基金表現：${r.performance}\n未來策略：${r.strategy}\n心得小記：${r.thoughts}\n近期推薦：${r.resources}`;
-  }).join('\n\n---\n\n');
+    const trim=s=>(s||'').slice(0,300);
+    return `【${r.title}（${r.date}）】\n表現：${trim(r.performance)}\n策略：${trim(r.strategy)}\n心得：${trim(r.thoughts)}\n推薦：${trim(r.resources)}`;
+  }).join('\n---\n');
 }
 
 function addMsg(text,role){
@@ -242,17 +244,8 @@ async function sendChat(){
   addMsg(esc(q),'user');
   const typingDiv=addMsg('<span class="chat-typing">胖鵝思考中...</span>','bot');
 
-  const systemPrompt=`你是「胖鵝基金」的 AI 助手，名字叫胖鵝。你的任務是根據以下 23 篇月報的內容來回答投資人的問題。
-
-規則：
-- 用繁體中文、親切口語化的語氣回答
-- 回答要簡潔，控制在 200 字以內
-- 如果找到相關月報，請告訴使用者是「哪一年幾月」的月報
-- 如果問題跟月報內容無關，友善地說你只能回答月報相關的問題
-- 不要編造月報裡沒有的資訊
-- 可以用 emoji 增加親切感
-
-以下是所有月報內容：
+  const systemPrompt=`你是「胖鵝基金」的 AI 助手，名字叫胖鵝。根據以下月報內容回答問題。
+規則：繁體中文、親切口語、200字以內、告知是哪年哪月的月報、不要編造、跟月報無關就友善拒絕。
 
 ${buildReportContext()}`;
 
@@ -266,11 +259,21 @@ ${buildReportContext()}`;
       })
     });
     const data=await res.json();
-    const answer=data?.candidates?.[0]?.content?.parts?.[0]?.text||'抱歉，我暫時無法回答，請稍後再試 😅';
-    typingDiv.innerHTML=answer.replace(/\n/g,'<br>');
+    if(data.error){
+      console.error('Gemini API error:',data.error);
+      typingDiv.innerHTML='API 錯誤：'+esc(data.error.message||'未知錯誤')+'😅';
+    }else{
+      const answer=data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if(answer){
+        typingDiv.innerHTML=answer.replace(/\n/g,'<br>');
+      }else{
+        console.error('Gemini unexpected response:',JSON.stringify(data).slice(0,500));
+        typingDiv.innerHTML='收到了意外的回應格式，請稍後再試 😅';
+      }
+    }
   }catch(e){
-    console.error('Gemini error:',e);
-    typingDiv.innerHTML='連線失敗，請稍後再試 😅';
+    console.error('Gemini fetch error:',e);
+    typingDiv.innerHTML='連線失敗：'+esc(e.message||'網路錯誤')+'😅';
   }
   $('chatSend').disabled=false;
   $('chatMsgs').scrollTop=$('chatMsgs').scrollHeight;
