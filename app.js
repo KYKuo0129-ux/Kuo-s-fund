@@ -194,7 +194,7 @@ function deleteReport(i){
 setInterval(()=>{$('heroCountdown').textContent=getCountdown();},60000);
 
 // Name cycling animation
-const NAMES=['郭冠妤','郭胖鵝','老郭','郭巧草','郭小鵝','郭郭'];
+const NAMES=['郭胖鵝','郭巧草','郭冠妤','老郭','郭郭','郭小鵝'];
 const NEON_COLORS=['#ff6b9d','#c084fc','#60d5f7','#4ecb71','#fbbf24','#f97316','#e879f9','#22d3ee'];
 let nameIdx=0;
 function cycleName(){
@@ -204,5 +204,76 @@ function cycleName(){
   el.textContent=NAMES[nameIdx];
 }
 setInterval(cycleName,1000);
+
+// ═══════════════════════════════════════════════════
+//  CHAT with Gemini
+// ═══════════════════════════════════════════════════
+const GEMINI_KEY='AIzaSyC3VFUFkQCrHH10h1wJgXFfKfH2ZFFQZaM';
+const GEMINI_URL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+GEMINI_KEY;
+
+function toggleChat(){
+  $('chatWin').classList.toggle('hidden');
+  if(!$('chatWin').classList.contains('hidden'))$('chatInput').focus();
+}
+
+function buildReportContext(){
+  return REPORTS_DATA.map(r=>{
+    return `【${r.title}（${r.date}）】\n基金表現：${r.performance}\n未來策略：${r.strategy}\n心得小記：${r.thoughts}\n近期推薦：${r.resources}`;
+  }).join('\n\n---\n\n');
+}
+
+function addMsg(text,role){
+  const msgs=$('chatMsgs');
+  const div=document.createElement('div');
+  div.className='chat-msg '+role;
+  div.innerHTML=text;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+async function sendChat(){
+  const input=$('chatInput');
+  const q=input.value.trim();
+  if(!q)return;
+  input.value='';
+  $('chatSend').disabled=true;
+
+  addMsg(esc(q),'user');
+  const typingDiv=addMsg('<span class="chat-typing">胖鵝思考中...</span>','bot');
+
+  const systemPrompt=`你是「胖鵝基金」的 AI 助手，名字叫胖鵝。你的任務是根據以下 23 篇月報的內容來回答投資人的問題。
+
+規則：
+- 用繁體中文、親切口語化的語氣回答
+- 回答要簡潔，控制在 200 字以內
+- 如果找到相關月報，請告訴使用者是「哪一年幾月」的月報
+- 如果問題跟月報內容無關，友善地說你只能回答月報相關的問題
+- 不要編造月報裡沒有的資訊
+- 可以用 emoji 增加親切感
+
+以下是所有月報內容：
+
+${buildReportContext()}`;
+
+  try{
+    const res=await fetch(GEMINI_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{role:'user',parts:[{text:systemPrompt+'\n\n用戶問題：'+q}]}],
+        generationConfig:{maxOutputTokens:500,temperature:0.7}
+      })
+    });
+    const data=await res.json();
+    const answer=data?.candidates?.[0]?.content?.parts?.[0]?.text||'抱歉，我暫時無法回答，請稍後再試 😅';
+    typingDiv.innerHTML=answer.replace(/\n/g,'<br>');
+  }catch(e){
+    console.error('Gemini error:',e);
+    typingDiv.innerHTML='連線失敗，請稍後再試 😅';
+  }
+  $('chatSend').disabled=false;
+  $('chatMsgs').scrollTop=$('chatMsgs').scrollHeight;
+}
 
 document.addEventListener('DOMContentLoaded',()=>{$('heroCountdown').textContent=getCountdown();fetchPrices();renderCharts();renderProsp();renderTrades();loadReports();});
