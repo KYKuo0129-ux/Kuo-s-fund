@@ -194,7 +194,7 @@ function deleteReport(i){
 setInterval(()=>{$('heroCountdown').textContent=getCountdown();},60000);
 
 // Name cycling animation
-const NAMES=['郭胖鵝','郭巧草','郭冠妤','老郭','郭郭','郭小鵝'];
+const NAMES=['郭冠妤','郭胖鵝','老郭','郭巧草','郭小鵝','郭郭'];
 const NEON_COLORS=['#ff6b9d','#c084fc','#60d5f7','#4ecb71','#fbbf24','#f97316','#e879f9','#22d3ee'];
 let nameIdx=0;
 function cycleName(){
@@ -205,3 +205,4 @@ function cycleName(){
 }
 setInterval(cycleName,1000);
 
+document.addEventListener('DOMContentLoaded',()=>{$('heroCountdown').textContent=getCountdown();fetchPrices();renderCharts();renderProsp();renderTrades();loadReports();});
