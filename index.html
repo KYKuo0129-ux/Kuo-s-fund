@@ -264,21 +264,6 @@ img,canvas,table{max-width:100%}
 </div>
 </div>
 
-<!-- CHAT -->
-<button class="chat-fab" id="chatFab" onclick="toggleChat()" title="問胖鵝">🐧</button>
-<div class="chat-win hidden" id="chatWin">
-  <div class="chat-head">
-    <span class="chat-head-title">🐧 問胖鵝</span>
-    <button class="chat-close" onclick="toggleChat()">✕</button>
-  </div>
-  <div class="chat-msgs" id="chatMsgs">
-    <div class="chat-msg bot">嗨！我是胖鵝 AI 助手 🐧<br><br>你可以問我任何關於月報的問題，例如：<br>• 「哪一個月講到記憶？」<br>• 「關於降息的分析」<br>• 「推薦過哪些書？」</div>
-  </div>
-  <div class="chat-input-row">
-    <input class="chat-input" id="chatInput" placeholder="輸入你的問題..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}">
-    <button class="chat-send" id="chatSend" onclick="sendChat()">送出</button>
-  </div>
-</div>
 
 <script src="reports.js"></script>
 <script src="app.js"></script>
