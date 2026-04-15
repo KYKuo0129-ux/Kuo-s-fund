@@ -64,7 +64,8 @@ function linkify(t,isThoughts){
   // Convert **bold**
   h=h.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
   // Convert > blockquotes
-  h=h.replace(/^&gt;\s?(.*)$/gm,'<blockquote style="border-left:2px solid var(--gold-d);padding-left:12px;margin:8px 0;color:var(--t2);font-style:italic">$1</blockquote>');
+  h=h.replace(/^&gt;\s?(.*)$/gm,'<blockquote style="border-left:2px solid var(--gold-d);padding-left:12px;margin:0;color:var(--t2);font-style:italic">$1</blockquote>');
+  h=h.replace(/<\/blockquote>(\s*<br>\s*)*<blockquote[^>]*>/g,'<br><br>');
   // Style thoughts titles: lines starting with 關於、論、淺談 etc
   if(isThoughts){
     h=h.replace(/^(關於.+|論.+|淺談.+|記.+|致.+)$/gm,'<div class="thoughts-title">$1</div>');
