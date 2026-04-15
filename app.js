@@ -1,4 +1,4 @@
-const COST=6160,TOTAL_TWD=200000,FUND_END=new Date('2026-03-15T23:59:59');
+const COST=6160,TOTAL_TWD=200000,FUND_END=new Date('2028-03-15T23:59:59');
 const PORTFOLIO=[
   {sym:'BTC',name:'Bitcoin',gid:'bitcoin',amt:0.02002066,cost:400},
   {sym:'ETH',name:'Ethereum',gid:'ethereum',amt:0.77086015,cost:2200},
@@ -21,6 +21,7 @@ const MONTHLY=[
   {m:'2025/04',pnl:-783},{m:'2025/05',pnl:766},{m:'2025/06',pnl:292},{m:'2025/07',pnl:1216},
   {m:'2025/08',pnl:2886},{m:'2025/09',pnl:2668},{m:'2025/10',pnl:1688},{m:'2025/11',pnl:82},
   {m:'2025/12',pnl:-410},{m:'2026/01',pnl:-62},{m:'2026/02',pnl:-2099},{m:'2026/03',pnl:-2061},
+  {m:'2026/04',pnl:-1887},
 ];
 const REALIZED=[
   {c:'AEVO',inv:90,ret:37.66,t:'2024/06'},{c:'BLUR',inv:60,ret:27.17,t:'2024/06'},
@@ -39,7 +40,7 @@ const PROSP_DATA=[
   {t:'目的',b:'擴大利潤、利益共享。\n\n我能體驗基金經理人的壓力，想辦法讓大家賺錢；你能參與加密貨幣市場，體驗漲跌波動。'},
   {t:'原則',b:'• 一切金流、操作，公開透明，經得起查驗與審問\n• 基金端將確保投資人身份、資料完全保密\n• 投資之本金須為投資人閒錢，請勿借錢投資\n• 佛系投資計畫，沒有集資壓力，也不用幫我做人情\n• 若對此計畫之投資合作關係有任何擔心或疑慮，請千萬別加入，你們是我最珍貴的寶藏'},
   {t:'分潤機制',b:'投資人優先，經理人劣後 —— 你們全部人都賺錢了，我才會開始賺錢。\n\n【虧損】經理人全數負擔，償還投資人本金\n【獲利 10% 以內】本金 + 獲利全數歸投資人\n【獲利 10% 以上】本金 + 10% 利息 + 剩餘獲利 10% Bonus\n\n投資人最大損失：歸還本金，兩年內沒半毛利息\n經理人最大損失：虧光 10 萬台幣'},
-  {t:'投資期間',b:'2024/3 ~ 2026/3（共兩年，無法在中間贖回）\n\n預計 2025/9 ~ 2026/3 左右陸續賣出，直到計畫到期。\n\n費用：手續費約 0.2~0.5%（交易所收取），管理費 0 元。'},
+  {t:'投資期間',b:'2024/3 ~ 2028/3（共四年，無法在中間贖回）\n\n預計 2027/9 ~ 2028/3 左右陸續賣出，直到計畫到期。\n\n費用：手續費約 0.2~0.5%（交易所收取），管理費 0 元。'},
   {t:'極端情況 & 擔保',b:'極端情況（最差情況為資金歸 0，本基金無融資行為，不會有負債產生）：投資失利、交易所倒閉、戰爭開打。\n\n擔保：\n• 一般狀況：以存款現金優先償還\n• 次等狀況：以股票、資產變賣償還\n• 最差狀況：以未來所得作為還款計畫\n\n確定合作後，會簽署借貸契約書，此契約具法律效益，可以強制執行。'},
   {t:'大戶福利',b:'投資超過 1 萬元者為大戶，享有：\n• 優先償還權\n• 個人化財務分析 & 建議\n• 限定款 NFT\n• VIP 招待餐會活動\n\n餐會規格視獲利而定，從便當＋麥香奶茶到遊艇派對＋香檳，甚至國外旅行！'},
 ];
@@ -62,18 +63,9 @@ function linkify(t,isThoughts){
   h=h.replace(/(?<!href="|">)(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
   // Convert **bold**
   h=h.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
-  // Convert > blockquotes - merge consecutive lines into single block
-  const _lines=h.split('\n');
-  const _out=[];let _buf=[];
-  for(const _l of _lines){
-    if(/^&gt;\s?/.test(_l)){_buf.push(_l.replace(/^&gt;\s?/,''));}
-    else{
-      if(_buf.length){_out.push('<blockquote style="border-left:2px solid var(--gold-d);padding-left:12px;margin:12px 0;color:var(--t2);font-style:italic;white-space:pre-wrap">'+_buf.join('\n')+'</blockquote>');_buf=[];}
-      _out.push(_l);
-    }
-  }
-  if(_buf.length)_out.push('<blockquote style="border-left:2px solid var(--gold-d);padding-left:12px;margin:12px 0;color:var(--t2);font-style:italic;white-space:pre-wrap">'+_buf.join('\n')+'</blockquote>');
-  h=_out.join('\n');
+  // Convert > blockquotes
+  h=h.replace(/^&gt;\s?(.*)$/gm,'<blockquote style="border-left:2px solid var(--gold-d);padding-left:12px;margin:0;color:var(--t2);font-style:italic">$1</blockquote>');
+  h=h.replace(/<\/blockquote>(\s*<br>\s*)*<blockquote[^>]*>/g,'<br><br>');
   // Style thoughts titles: lines starting with 關於、論、淺談 etc
   if(isThoughts){
     h=h.replace(/^(關於.+|論.+|淺談.+|記.+|致.+)$/gm,'<div class="thoughts-title">$1</div>');
@@ -204,7 +196,7 @@ function deleteReport(i){
 setInterval(()=>{$('heroCountdown').textContent=getCountdown();},60000);
 
 // Name cycling animation
-const NAMES=['郭胖鵝','郭巧草','郭冠妤','老郭','郭郭','郭小鵝'];
+const NAMES=['郭冠妤','郭胖鵝','老郭','郭巧草','郭小鵝','郭郭'];
 const NEON_COLORS=['#ff6b9d','#c084fc','#60d5f7','#4ecb71','#fbbf24','#f97316','#e879f9','#22d3ee'];
 let nameIdx=0;
 function cycleName(){
